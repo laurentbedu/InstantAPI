@@ -48,11 +48,15 @@ namespace InstantAPI.Controllers
         {
             AppUser? storedUser = _context.AppUsers.Single(user => user.Login == userDto.Login);
 
-            _context.Entry(storedUser).Reference("IdRoleNavigation").Load();
+
 
             if (storedUser == null)
             {
                 return BadRequest("Invalid Credentials");
+            }
+            else
+            {
+                _context.Entry(storedUser).Reference("IdRoleNavigation").Load();
             }
 
             AppUser appUser = new AppUser() { Login = userDto.Login, Password = userDto.Password };
@@ -61,7 +65,9 @@ namespace InstantAPI.Controllers
                 return BadRequest("Invalid Credentials");
             }
 
-            return Ok(new { login = storedUser.Login, role = storedUser.IdRoleNavigation.Name });
+            string token = SecurityHelper.CreateJWt(storedUser);
+
+            return Ok(new { login = storedUser.Login, role = storedUser.IdRoleNavigation.Name, token });
 
         }
 
