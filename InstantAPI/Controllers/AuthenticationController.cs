@@ -1,6 +1,7 @@
 ﻿using InstantAPI.Helpers;
 using InstantAPI.Models;
 using Microsoft.AspNetCore.Mvc;
+using static InstantAPI.Helpers.DtoRecordsHelper;
 
 namespace InstantAPI.Controllers
 {
@@ -17,15 +18,16 @@ namespace InstantAPI.Controllers
 
         [HttpPost]
         [Route("register")]
-        public async Task<IActionResult> Register(AppUser appUser)
+        public async Task<IActionResult> Register(UserDto userDto)
         {
-            AppUser? user = _context.AppUsers.SingleOrDefault(user => user.Login == appUser.Login);
+            AppUser? storedUser = _context.AppUsers.SingleOrDefault(user => user.Login == userDto.Login);
 
-            if (user != null)
+            if (storedUser != null)
             {
                 return BadRequest("User already exists");
             }
 
+            AppUser appUser = new AppUser() { Login = userDto.Login, Password = userDto.Password };
             SecurityHelper.HashAppUserPassword(ref appUser);
 
             _context.AppUsers.Add(appUser);
@@ -37,6 +39,29 @@ namespace InstantAPI.Controllers
             }
 
             return BadRequest();
+
+        }
+
+        [HttpPost]
+        [Route("login")]
+        public async Task<IActionResult> Login(UserDto userDto)
+        {
+            AppUser? storedUser = _context.AppUsers.Single(user => user.Login == userDto.Login);
+
+            _context.Entry(storedUser).Reference("IdRoleNavigation").Load();
+
+            if (storedUser == null)
+            {
+                return BadRequest("Invalid Credentials");
+            }
+
+            AppUser appUser = new AppUser() { Login = userDto.Login, Password = userDto.Password };
+            if (!SecurityHelper.VerifyAppUserPassword(storedUser, appUser))
+            {
+                return BadRequest("Invalid Credentials");
+            }
+
+            return Ok(new { login = storedUser.Login, role = storedUser.IdRoleNavigation.Name });
 
         }
 

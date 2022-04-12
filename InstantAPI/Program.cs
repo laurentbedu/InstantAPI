@@ -25,7 +25,10 @@ app.UseHttpsRedirection();
 
 app.MapControllers();
 
-app.MapInstantAPIs<AppDbContext>();
+app.MapInstantAPIs<AppDbContext>(options =>
+{
+    options.ExcludeTable(context => context.AppUsers);
+});
 
 app.Run();
 

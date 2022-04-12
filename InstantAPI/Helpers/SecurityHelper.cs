@@ -23,5 +23,23 @@ namespace InstantAPI.Helpers
             ));
             appUser.Password = b64salt + "$" + encryptedPassword;
         }
+
+        public static bool VerifyAppUserPassword(AppUser storedUser, AppUser appUser)
+        {
+            string storedEncyptedPassword = storedUser.Password.Split('$')[1];
+            string b64salt = storedUser.Password.Split('$')[0];
+            byte[] salt = Convert.FromBase64String(b64salt);
+            string inputEncryptedPassword = Convert.ToBase64String(KeyDerivation.Pbkdf2(
+                password: appUser.Password,
+                salt: salt,
+                prf: KeyDerivationPrf.HMACSHA256,
+                iterationCount: 10000,
+                numBytesRequested: 256 / 8
+            ));
+
+            return storedEncyptedPassword == inputEncryptedPassword;
+        }
+
+
     }
 }

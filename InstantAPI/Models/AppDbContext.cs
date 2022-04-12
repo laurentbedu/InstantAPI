@@ -38,12 +38,14 @@ namespace InstantAPI.Models
             {
                 entity.ToTable("app_user");
 
-                entity.HasIndex(e => e.Login, "UQ__app_user__7838F27221125695")
+                entity.HasIndex(e => e.Login, "UQ__app_user__7838F2728CF9DBE3")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("id");
 
-                entity.Property(e => e.IdAuteur).HasColumnName("Id_auteur");
+                entity.Property(e => e.IdAuteur)
+                    .HasColumnName("Id_auteur")
+                    .HasDefaultValueSql("((1))");
 
                 entity.Property(e => e.IdRole)
                     .HasColumnName("Id_role")
@@ -64,12 +66,14 @@ namespace InstantAPI.Models
                 entity.HasOne(d => d.IdAuteurNavigation)
                     .WithMany(p => p.AppUsers)
                     .HasForeignKey(d => d.IdAuteur)
-                    .HasConstraintName("FK__app_user__Id_aut__3B75D760");
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__app_user__Id_aut__4AB81AF0");
 
                 entity.HasOne(d => d.IdRoleNavigation)
                     .WithMany(p => p.AppUsers)
                     .HasForeignKey(d => d.IdRole)
-                    .HasConstraintName("FK__app_user__Id_rol__3A81B327");
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__app_user__Id_rol__49C3F6B7");
             });
 
             modelBuilder.Entity<Article>(entity =>
