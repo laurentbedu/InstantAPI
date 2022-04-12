@@ -22,7 +22,6 @@ namespace InstantAPI.Models
         public virtual DbSet<Image> Images { get; set; } = null!;
         public virtual DbSet<Role> Roles { get; set; } = null!;
         public virtual DbSet<Tag> Tags { get; set; } = null!;
-        public virtual DbSet<Test> Tests { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -39,14 +38,16 @@ namespace InstantAPI.Models
             {
                 entity.ToTable("app_user");
 
-                entity.HasIndex(e => e.Login, "UQ__app_user__7838F2720B0DD406")
+                entity.HasIndex(e => e.Login, "UQ__app_user__7838F27221125695")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("id");
 
                 entity.Property(e => e.IdAuteur).HasColumnName("Id_auteur");
 
-                entity.Property(e => e.IdRole).HasColumnName("Id_role");
+                entity.Property(e => e.IdRole)
+                    .HasColumnName("Id_role")
+                    .HasDefaultValueSql("((1))");
 
                 entity.Property(e => e.IsDeleted).HasColumnName("is_deleted");
 
@@ -63,13 +64,12 @@ namespace InstantAPI.Models
                 entity.HasOne(d => d.IdAuteurNavigation)
                     .WithMany(p => p.AppUsers)
                     .HasForeignKey(d => d.IdAuteur)
-                    .HasConstraintName("FK__app_user__Id_aut__3A81B327");
+                    .HasConstraintName("FK__app_user__Id_aut__3B75D760");
 
                 entity.HasOne(d => d.IdRoleNavigation)
                     .WithMany(p => p.AppUsers)
                     .HasForeignKey(d => d.IdRole)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__app_user__Id_rol__398D8EEE");
+                    .HasConstraintName("FK__app_user__Id_rol__3A81B327");
             });
 
             modelBuilder.Entity<Article>(entity =>
@@ -102,11 +102,11 @@ namespace InstantAPI.Models
                     .WithMany(p => p.IdArticles)
                     .UsingEntity<Dictionary<string, object>>(
                         "ArticleImage",
-                        l => l.HasOne<Image>().WithMany().HasForeignKey("IdImage").OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK__article_i__Id_im__4222D4EF"),
-                        r => r.HasOne<Article>().WithMany().HasForeignKey("IdArticle").OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK__article_i__Id_ar__412EB0B6"),
+                        l => l.HasOne<Image>().WithMany().HasForeignKey("IdImage").OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK__article_i__Id_im__4316F928"),
+                        r => r.HasOne<Article>().WithMany().HasForeignKey("IdArticle").OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK__article_i__Id_ar__4222D4EF"),
                         j =>
                         {
-                            j.HasKey("IdArticle", "IdImage").HasName("PK__article___F2BDA3B6B8017445");
+                            j.HasKey("IdArticle", "IdImage").HasName("PK__article___F2BDA3B6F97BD216");
 
                             j.ToTable("article_image");
 
@@ -119,11 +119,11 @@ namespace InstantAPI.Models
                     .WithMany(p => p.IdArticles)
                     .UsingEntity<Dictionary<string, object>>(
                         "ArticleTag",
-                        l => l.HasOne<Tag>().WithMany().HasForeignKey("IdTag").OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK__article_t__Id_ta__3E52440B"),
-                        r => r.HasOne<Article>().WithMany().HasForeignKey("IdArticle").OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK__article_t__Id_ar__3D5E1FD2"),
+                        l => l.HasOne<Tag>().WithMany().HasForeignKey("IdTag").OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK__article_t__Id_ta__3F466844"),
+                        r => r.HasOne<Article>().WithMany().HasForeignKey("IdArticle").OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK__article_t__Id_ar__3E52440B"),
                         j =>
                         {
-                            j.HasKey("IdArticle", "IdTag").HasName("PK__article___9188955CD2D754EE");
+                            j.HasKey("IdArticle", "IdTag").HasName("PK__article___9188955CE1384B4F");
 
                             j.ToTable("article_tag");
 
@@ -137,7 +137,7 @@ namespace InstantAPI.Models
             {
                 entity.ToTable("auteur");
 
-                entity.HasIndex(e => e.Pseudo, "UQ__auteur__EA0EEA224006EE83")
+                entity.HasIndex(e => e.Pseudo, "UQ__auteur__EA0EEA220116080B")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("id");
@@ -164,7 +164,7 @@ namespace InstantAPI.Models
             {
                 entity.ToTable("image");
 
-                entity.HasIndex(e => e.Filepath, "UQ__image__DFE356BEC2216E98")
+                entity.HasIndex(e => e.Filepath, "UQ__image__DFE356BEA65DD45B")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("id");
@@ -186,7 +186,7 @@ namespace InstantAPI.Models
             {
                 entity.ToTable("role");
 
-                entity.HasIndex(e => e.Name, "UQ__role__72E12F1B1C6E244A")
+                entity.HasIndex(e => e.Name, "UQ__role__72E12F1B6B0BB981")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("id");
@@ -203,7 +203,7 @@ namespace InstantAPI.Models
             {
                 entity.ToTable("tag");
 
-                entity.HasIndex(e => e.Mot, "UQ__tag__DF50CE3CB8B3F602")
+                entity.HasIndex(e => e.Mot, "UQ__tag__DF50CE3CAF5B8A24")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("id");
@@ -214,18 +214,6 @@ namespace InstantAPI.Models
                     .HasMaxLength(255)
                     .IsUnicode(false)
                     .HasColumnName("mot");
-            });
-
-            modelBuilder.Entity<Test>(entity =>
-            {
-                entity.ToTable("test");
-
-                entity.Property(e => e.Id).HasColumnName("id");
-
-                entity.Property(e => e.Titre)
-                    .HasMaxLength(255)
-                    .IsUnicode(false)
-                    .HasColumnName("titre");
             });
 
             OnModelCreatingPartial(modelBuilder);
