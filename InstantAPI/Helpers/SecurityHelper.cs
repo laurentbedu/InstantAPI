@@ -44,31 +44,31 @@ namespace InstantAPI.Helpers
             return storedEncyptedPassword == inputEncryptedPassword;
         }
 
-        private static IConfigurationRoot configuration = new ConfigurationBuilder()
+        private static IConfigurationRoot _configuration = new ConfigurationBuilder()
                     .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
                     .AddJsonFile("appsettings.json")
                     .Build();
 
 
 
-        public static string CreateJWt(AppUser appUser)
+        public static string CreateJwt(AppUser appUser)
         {
-            var test = configuration["Jwt:SigningKey"];
+            var test = _configuration["Jwt:SigningKey"];
 
             var claims = new[] {
-                        new Claim(JwtRegisteredClaimNames.Sub, configuration["Jwt:Subject"]),
+                        new Claim(JwtRegisteredClaimNames.Sub, _configuration["Jwt:Subject"]),
                         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                         new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
                         new Claim("Id", appUser.Id.ToString()),
                         new Claim("Login", appUser.Login),
-                        new Claim("IdRole", appUser.IdRole.ToString())
+                        new Claim("Role", appUser.IdRoleNavigation.Name)
                     };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:SigningKey"]));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:SigningKey"]));
             var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var token = new JwtSecurityToken(
-                configuration["Jwt:Issuer"],
-                configuration["Jwt:Audience"],
+                _configuration["Jwt:Issuer"],
+                _configuration["Jwt:Audience"],
                 claims,
                 expires: DateTime.UtcNow.AddMinutes(1),
                 signingCredentials: signIn);
@@ -76,6 +76,30 @@ namespace InstantAPI.Helpers
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
+        public static bool ValidateJwt(string token)
+        {
+            var tokenParams = new TokenValidationParameters()
+            {
+                RequireExpirationTime = true,
+                ValidateLifetime = true,
+                ValidateIssuer = true,
+                ValidIssuer = _configuration["Jwt:Issuer"],
+                ValidateAudience = true,
+                ValidAudience = _configuration["Jwt:Audience"],
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:SigningKey"]))
+            };
+            SecurityToken? validated = null;
+            try
+            {
+                new JwtSecurityTokenHandler().ValidateToken(token, tokenParams, out validated);
+            }
+            catch (Exception)
+            {
+                validated = null;
+            }
+            return validated != null;
+        }
 
     }
 }

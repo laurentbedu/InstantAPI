@@ -65,7 +65,7 @@ namespace InstantAPI.Controllers
                 return BadRequest("Invalid Credentials");
             }
 
-            string token = SecurityHelper.CreateJWt(storedUser);
+            string token = SecurityHelper.CreateJwt(storedUser);
 
             return Ok(new { login = storedUser.Login, role = storedUser.IdRoleNavigation.Name, token });
 
